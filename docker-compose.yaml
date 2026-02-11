@@ -20,6 +20,7 @@ services:
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
 
       KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
       KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
 
@@ -44,8 +45,7 @@ services:
       KAFKA_PORT: "9092"
 
     depends_on:
-      kafka:
-        condition: service_healthy
+      - kafka
 
 
   mongodb:
@@ -61,7 +61,8 @@ services:
       MONGO_DATABASE_NAME: users-stor
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "mongo", "--username", "mongo-database", "--password", "mongo-users-stor-password", "--eval", "db.adminCommand('ping')"]
+      test: ["CMD", "mongosh", "--username", "mongo-database", "--password", "mongo-users-stor-password", "--eval", "db.adminCommand('ping')"]
+
       interval: 10s
       timeout: 5s
       retries: 5
@@ -82,12 +83,8 @@ services:
       retries: 5
 
     depends_on:
-      kafka:
-        condition: service_healthy
-      mongodb:
-        condition: service_healthy
-
-
+      - kafka
+      - mongodb
 
 volumes:
   mongodb_data:
